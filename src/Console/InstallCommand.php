@@ -26,6 +26,7 @@ class InstallCommand extends Command
                             {--inertia : Indicate that the Vue Inertia stack should be installed (Deprecated)}
                             {--pest : Indicate that Pest should be installed}
                             {--ssr : Indicates if Inertia SSR support should be installed}
+                            {--must-verify : Indicates if MustVerifyEmail class and EnsureEmailIsVerified Middleware should be used}
                             {--typescript : Indicates if TypeScript is preferred for the Inertia stack (Experimental)}
                             {--composer=global : Absolute path to the Composer binary which should be used to install packages}';
 
@@ -152,6 +153,68 @@ class InstallCommand extends Command
             ));
         }
     }
+
+    /**
+     * Install the support to verify email addresses when a user registers.
+     * 
+     * @return void
+     */
+    protected function installVerifyEmail()
+    {
+        $this->implementsVerifyEmailInterface();
+
+        $this->addVerifiedMiddlewareInDashboardRoute();
+    }
+
+    /**
+     * Add 'verified' middleware in Dashboard route.
+     * 
+     * @return void
+     */
+    protected function addVerifiedMiddlewareInDashboardRoute()
+    {
+        $this->replaceInFile(
+            "})->middleware(['auth'])->name('dashboard');",
+            "})->middleware(['auth', 'verified'])->name('dashboard');",
+            base_path('routes/web.php')
+        );
+    }
+
+    /**
+     * Implements MustVerifyEmail interface in User model.
+     * 
+     * @return void
+     */
+    protected function implementsVerifyEmailInterface()
+    {
+        
+        $modelsUser = file_get_contents(app_path('Models/User.php'));
+
+        # remove comment in MustVerifyEmail interface
+        if(! Str::contains($modelsUser, 'use Illuminate\Contracts\Auth\MustVerifyEmail;')) {
+            $this->replaceInFile(
+                'use Laravel\Sanctum\HasApiTokens;',
+                'use Laravel\Sanctum\HasApiTokens;'.PHP_EOL.'use Illuminate\Contracts\Auth\MustVerifyEmail;',
+                app_path('Models/User.php')
+            );    
+        } else if( Str::contains($modelsUser, "// use Illuminate\Contracts\Auth\MustVerifyEmail;")) {
+            $this->replaceInFile(
+                "// use Illuminate\Contracts\Auth\MustVerifyEmail;",
+                "use Illuminate\Contracts\Auth\MustVerifyEmail;",
+                app_path('Models/User.php')
+            );
+        }
+        
+        // implement MustVerifyEmail interface
+        if(! Str::contains($modelsUser, "implements MustVerifyEmail")) {   
+            $this->replaceInFile(
+                "class User extends Authenticatable",
+                "class User extends Authenticatable implements MustVerifyEmail",
+                app_path('Models/User.php')
+            );
+        }
+    }
+
 
     /**
      * Installs the given Composer Packages into the application.
