@@ -62,6 +62,11 @@ trait InstallsApiStack
             preg_replace('/APP_URL=(.*)/', 'APP_URL=http://localhost:8000'.PHP_EOL.'FRONTEND_URL=http://localhost:3000', file_get_contents(base_path('.env')))
         );
 
+        // Use MustVerifyEmail interface in User model ...
+        if ($this->option('must-verify')) {
+            $this->implementsVerifyEmailInterface();
+        }
+
         // Tests...
         if (! $this->installTests()) {
             return 1;
