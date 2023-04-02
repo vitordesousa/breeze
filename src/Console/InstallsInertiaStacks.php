@@ -98,6 +98,11 @@ trait InstallsInertiaStacks
         copy(__DIR__.'/../../stubs/inertia-common/routes/web.php', base_path('routes/web.php'));
         copy(__DIR__.'/../../stubs/inertia-common/routes/auth.php', base_path('routes/auth.php'));
 
+        // add verified middleware to dashboard route and use MustVerifyEmail interface
+        if ($this->option('must-verify')) {
+            $this->installVerifyEmail();
+        }
+
         // "Dashboard" Route...
         $this->replaceInFile('/home', '/dashboard', app_path('Providers/RouteServiceProvider.php'));
 
@@ -264,6 +269,11 @@ trait InstallsInertiaStacks
         // Routes...
         copy(__DIR__.'/../../stubs/inertia-common/routes/web.php', base_path('routes/web.php'));
         copy(__DIR__.'/../../stubs/inertia-common/routes/auth.php', base_path('routes/auth.php'));
+
+        // add verified middleware to dashboard route and use MustVerifyEmail interface
+        if ($this->option('must-verify')) {
+            $this->installVerifyEmail();
+        }
 
         // "Dashboard" Route...
         $this->replaceInFile('/home', '/dashboard', app_path('Providers/RouteServiceProvider.php'));

@@ -58,6 +58,11 @@ trait InstallsBladeStack
         copy(__DIR__.'/../../stubs/default/routes/web.php', base_path('routes/web.php'));
         copy(__DIR__.'/../../stubs/default/routes/auth.php', base_path('routes/auth.php'));
 
+        // add verified middleware to dashboard route and use MustVerifyEmail interface
+        if ($this->option('must-verify')) {
+            $this->installVerifyEmail();
+        }
+
         // "Dashboard" Route...
         $this->replaceInFile('/home', '/dashboard', resource_path('views/welcome.blade.php'));
         $this->replaceInFile('Home', 'Dashboard', resource_path('views/welcome.blade.php'));
